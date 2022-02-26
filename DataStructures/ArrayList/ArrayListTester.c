@@ -12,12 +12,14 @@ int main() {
 
 	Add(&list, 1);
 	Add(&list, 2);
-	Add(&list, 3);
+	Add(&list, 4);
+
+	InsertAt(&list, 3, 2);
 
 	printf("Is list empty: %s\n", IsEmpty(&list) ? "true": "false");
 
 	int i = 0;
-	for (i = 0; i < 3; i++) {
+	for (i = 0; i < Size(&list); i++) {
 		int value = -1;
 		int ret = Get(&list, i, &value);
 
