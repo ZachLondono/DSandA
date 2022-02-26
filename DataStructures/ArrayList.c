@@ -6,7 +6,7 @@ int main() {
 
 	ArrayList list;
 
-	Initilize(&list, 5);
+	Initilize(&list, 2);
 
 	Add(&list, 1);
 	Add(&list, 2);
@@ -21,6 +21,8 @@ int main() {
 			printf("%d -> %d\n", i, value);
 		else printf("Error reading from arraylist\n");
 	}
+
+	Free(&list);
 
 }
 
@@ -37,13 +39,22 @@ void Add(ArrayList* list, int value) {
 		return;
 	}
 
-	// TODO: resize content
+	printf("size:%d, cap:%d\n", list->size, list->capacity);
 	if (list->size == list->capacity) {
-		printf("[ERROR] resizable array not implemented\n");
-		return;
+		printf("[INFO] resizing list content\n");
+		int new_capacity = sizeof(int) * list->capacity * 2;
+		int* new_content;
+		new_content = realloc(list->content, new_capacity);
+		if (new_content == NULL) {
+			printf("[ERROR] could not allocate more memory for content\n");
+			return;
+		}
+		list->content = new_content;
+		list->capacity = new_capacity;
 	}
 
-	list->content[list->size] = value;
+	int index = list->size;
+	list->content[index] = value;
 	list->size++;
 
 }
@@ -66,7 +77,11 @@ int Get(ArrayList* list, int index, int* value) {
 
 }
 
+void Free(ArrayList* list) {
 
+	free(list->content);
+
+}
 
 
 
