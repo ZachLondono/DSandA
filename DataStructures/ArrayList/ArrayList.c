@@ -2,30 +2,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-int main() {
-
-	ArrayList list;
-
-	Initilize(&list, 2);
-
-	Add(&list, 1);
-	Add(&list, 2);
-	Add(&list, 3);
-
-	int i = 0;
-	for (i = 0; i < 3; i++) {
-		int value = -1;
-		int ret = Get(&list, i, &value);
-
-		if (ret >= 0)
-			printf("%d -> %d\n", i, value);
-		else printf("Error reading from arraylist\n");
-	}
-
-	Free(&list);
-
-}
-
 void Initilize(ArrayList* list, int initialCapacity) {
 	list->capacity = initialCapacity;
 	list->size = 0;
@@ -77,21 +53,17 @@ int Get(ArrayList* list, int index, int* value) {
 
 }
 
+bool IsEmpty(ArrayList* list) {
+	return list->size == 0;
+}
+
+int Size(ArrayList* list) {
+	return list->size;
+}
+
 void Free(ArrayList* list) {
 
 	free(list->content);
 
 }
-
-
-
-
-
-
-
-
-
-
-
-
 
