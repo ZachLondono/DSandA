@@ -131,6 +131,10 @@ int Size(ArrayList* list) {
 	return list->size;
 }
 
+void Clear(ArrayList* list) {
+	list->size = 0;
+}
+
 void Free(ArrayList* list) {
 
 	free(list->content);

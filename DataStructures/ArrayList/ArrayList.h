@@ -28,6 +28,8 @@ bool IsEmpty(ArrayList* list);
 // Returns the number of entities currently stored in the array list
 int Size(ArrayList* list);
 
+void Clear(ArrayList* list);
+
 void Free(ArrayList* list);
 
 #endif	
