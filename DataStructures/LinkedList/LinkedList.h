@@ -17,6 +17,8 @@ void Add(LinkedList* list, void* value, size_t size);
 
 void* GetValue(LinkedList* list, int index);
 
+void SetValue(LinkedList* list, void* value, size_t size, int index);
+
 void Free(LinkedList* list);
 
 #endif

@@ -24,6 +24,26 @@ int main() {
 	int* value2 = (int*) GetValue(&list, 1);
 	printf("2: %d\n", *value2);
 
+
+	printf("Rewriting index: 0\n");
+	int newNumber1 = 999;
+	SetValue(&list, &newNumber1, sizeof(int), 0);
+	printf("Reading number1\n");
+	value1 = (int*) GetValue(&list, 0);
+	printf("1: %d\n", *value1);
+
+
+	printf("Rewriting index: 1\n");
+	SetValue(&list, &newNumber1, sizeof(int), 1);
+	printf("Reading number2\n");
+	value2 = (int*) GetValue(&list, 1);
+	printf("2: %d\n", *value2);
+
+
+
+	printf("Rewriting index: 10 (invliad)\n");
+	SetValue(&list, &newNumber1, sizeof(int), 10);	
+
 	Free(&list);
 
 }
