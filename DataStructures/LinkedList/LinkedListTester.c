@@ -39,6 +39,10 @@ int main() {
 	value2 = (int*) ll_getvalue(&list, 1);
 	printf("2: %d\n", *value2);
 
+	
+	printf("Removing index: 1\n");
+	void* node = ll_getvalue(&list, 1);
+	ll_remove(list, node);
 
 
 	printf("Rewriting index: 10 (invliad)\n");

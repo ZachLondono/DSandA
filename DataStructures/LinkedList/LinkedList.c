@@ -104,6 +104,31 @@ void ll_setvalue(LinkedList* list, void* value, size_t size, int index) {
 	printf("[ERROR] invalid index\n");
 }
 
+
+//TODO: nodes should be removed by their value or index, not a pointer to the node. The caller should not have to be responsible for freeing a node they did not directly allocate
+void ll_remove(LinkedList list, Node* node) {
+
+	if (node == NULL) return;
+	
+	Node* currNode = list.head;
+	Node* prevNode = NULL;
+	while (currNode != NULL) {
+		
+		if (currNode != node)  {
+			prevNode = currNode;
+			currNode = currNode->next;
+			continue;
+		}
+
+		if (prevNode == NULL) list.head = currNode->next;
+		else  prevNode->next = currNode->next;
+		list.size--;
+		return;
+				
+	}
+
+}
+
 static void ll_freenode(Node* node) {
 
 	if (node->next != NULL)
