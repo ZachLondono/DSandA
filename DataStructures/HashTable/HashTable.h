@@ -16,17 +16,17 @@ typedef struct _HashTable {
 
 void ht_initilize(HashTable* table);
 
-bool ContainsKey(HashTable* table, int key);
+bool ht_containskey(HashTable table, int key);
 
-int Get(HashTable* table, int key);
+void* ht_get(HashTable table, int key);
 
-int ht_put(HashTable* table, int key, int value);
+int ht_put(HashTable table, int key, int value);
 
-void Remove(HashTable* table, int key);
+void ht_remove(HashTable table, int key);
 
-int Size(HashTable* table);
+int ht_size(HashTable table);
 
-void Clear(HashTable* table);
+void ht_clear(HashTable* table);
 
 void ht_free(HashTable table);
 
