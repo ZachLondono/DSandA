@@ -1,2 +1,3 @@
 *.swp
 *.[oa]
+tests/
