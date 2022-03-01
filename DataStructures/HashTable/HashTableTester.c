@@ -47,7 +47,7 @@ void StructTableTest() {
 
 	Thing* value_1 = ht_get(table, &key_1);
 	if (value_1 != NULL) printf("check1: '%s' == '%s' \n", thing_1.value, value_1->value);
-	Thing* value_2 = ht_get(table, &key_1);
+	Thing* value_2 = ht_get(table, &key_2);
 	if (value_1 != NULL) printf("check2: '%s' == '%s' \n", thing_2.value, value_2->value);
 	
 	ht_free(table);	
