@@ -2,6 +2,12 @@
 #include <stdio.h>
 #include <string.h>
 
+void ll_initilize(LinkedList* list) {
+	list->head = NULL;
+	list->size = 0;
+	list->free_contents = NULL;
+}
+
 static Node* ll_createnode() {
 	Node* node = malloc(sizeof(Node));
 	node->value = NULL;
@@ -46,15 +52,15 @@ void ll_add(LinkedList* list, void* value, size_t size) {
 
 }
 
-void* ll_getvalue(LinkedList* list, int index) {
+void* ll_getvalue(LinkedList list, int index) {
 
-	if (list == NULL || list->head == NULL) {
+	if (list.head == NULL) {
 		printf("[WARNING] list is null or has not been initilized\n");
 		return NULL;
 	}
 
 	int i = 0;
-	Node* currNode = list->head;
+	Node* currNode = list.head;
 	while (currNode != NULL) {
 
 		if (i == index) 
@@ -69,25 +75,20 @@ void* ll_getvalue(LinkedList* list, int index) {
 
 }
 
-void ll_setvalue(LinkedList* list, void* value, size_t size, int index) {
+void ll_setvalue(LinkedList list, void* value, size_t size, int index) {
 
-	if (list->size <= index) {
+	if (list.size <= index) {
 		printf("[ERROR] invalid index\n");
 		return;
 	}
-
-	if (list == NULL) {
-		printf("[WARNING] list is null\n");
-		return;
-	}
 	
-	if (list->head == NULL) {
+	if (list.head == NULL) {
 		printf("[WARNING] list contains no values\n");
 		return;
 	}
 
 	int i = 0;
-	Node* currNode = list->head;
+	Node* currNode = list.head;
 	while (1) {
 
 		if (i == index) {
@@ -104,24 +105,35 @@ void ll_setvalue(LinkedList* list, void* value, size_t size, int index) {
 	printf("[ERROR] invalid index\n");
 }
 
+static void ll_freenode(Node* node, void (*free_contents)(void*)) {
+	printf("Freeing node\n");
+	void* value = node->value;
+	if (free_contents != NULL) {
+		printf("Freeing content\n");
+		free_contents(value);
+	}
+	free(value);
+	free(node);
+	printf("Node freed\n");
+}
 
-//TODO: nodes should be removed by their value or index, not a pointer to the node. The caller should not have to be responsible for freeing a node they did not directly allocate
-void ll_remove(LinkedList list, Node* node) {
+void ll_remove(LinkedList list, int index) {
 
-	if (node == NULL) return;
-	
+	int currIndex = 0;
 	Node* currNode = list.head;
 	Node* prevNode = NULL;
 	while (currNode != NULL) {
 		
-		if (currNode != node)  {
+		if (currIndex != index)  {
 			prevNode = currNode;
 			currNode = currNode->next;
+			currIndex++;
 			continue;
 		}
 
 		if (prevNode == NULL) list.head = currNode->next;
 		else  prevNode->next = currNode->next;
+		ll_freenode(currNode, list.free_contents);
 		list.size--;
 		return;
 				
@@ -129,20 +141,14 @@ void ll_remove(LinkedList list, Node* node) {
 
 }
 
-static void ll_freenode(Node* node) {
-
-	if (node->next != NULL)
-		ll_freenode(node->next);
-
-	void* value = node->value;
-	free(value);
-	free(node);
-
-}
-
 void ll_free(LinkedList* list) {
 	if (list->head == NULL) return;
-	ll_freenode(list->head);
+	Node* currNode = list->head;
+	while (currNode != NULL) {
+		Node* nextNode = currNode->next;
+		ll_freenode(currNode, list->free_contents);
+		currNode = nextNode;
+	}
 }
 
 

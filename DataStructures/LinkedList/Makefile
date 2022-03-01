@@ -13,4 +13,4 @@ clean:
 	(rm ./tests/tester)
 
 profile:
-	valgrind ./tests/tester
+	valgrind --leak-check=full -s ./tests/tester
