@@ -12,70 +12,17 @@ static int Hash(void* key) {
 	return hashcode;
 }
 
-static bool CompareInts(void* a, void* b) {
-
-	int intA = *(int*)a;
-	int intB = *(int*)b;
-
-	printf("Comparing key '%d' to key '%d'\n", intA, intB);
-
-	return intA == intB;
-	
-}
-
 static void FreeKVPair(void* value) {
 	KeyValuePair* pair = value;
 	if (pair != NULL) {
-		printf("Try to '%p' & '%p'\n", pair->key, pair->value);
+		if (pair->free_keycontent != NULL) 
+			pair->free_keycontent(pair->key);
 		free(pair->key);
+
+		if (pair->free_valuecontent != NULL) 
+			pair->free_valuecontent(pair->value);
 		free(pair->value);
 	}
-}
-
-int main() {
-
-	HashTable table;
-	ht_initilize(&table);
-	table.are_equal = &CompareInts;
-
-	int key = 1;
-	int value = 101;
-	printf("Putting value '%d' into key '%d'\n", value, key);
-	ht_put(table, key, value);
-
-	bool containsKey = ht_containskey(table, key);
-	printf("Checking for key '%d': %s\n", key, containsKey ? "true" : "false");
-
-	int* read_value = (int*) ht_get(table,key);
-	printf("Value stored in key '%d' : %d\n", key, *read_value);
-	
-	int key2 = 2;
-	int value2 = 202;
-	printf("Putting value '%d' into key '%d'\n", value2, key2);
-	ht_put(table, key2, value2);
-
-	printf("Removing value with key '%d'\n", key2);
-	ht_remove(table, key2);
-
-	containsKey = ht_containskey(table, key2);
-	printf("Checking for key '%d': %s\n", key2, containsKey ? "true" : "false");
-
-	int* invalid = ht_get(table, key2);
-	if (invalid != NULL)
-		printf("You shouldn't see this%d\n", *invalid);
-	
-	int key3 = 2;
-	int value3 = 202;
-	printf("Putting value '%d' into key '%d'\n", value3, key3);
-	ht_put(table, key3, value3);
-
-	int key4 = 2;
-	int value4 = 202;
-	printf("Putting value '%d' into key '%d'\n", value4, key4);
-	ht_put(table, key4, value4);
-
-	ht_free(table);	
-
 }
 
 void ht_initilize(HashTable* table) {
@@ -84,13 +31,14 @@ void ht_initilize(HashTable* table) {
 	table->are_equal = NULL;
 }
 
-KeyValuePair* ht_get_kvpair(HashTable table, int key) {
+static KeyValuePair* ht_get_kvpair(HashTable table, void* key) {
 	if(table.buckets == NULL) {
 		printf("[WARNING] table not initilized");
 		return NULL;
 	}
 
-	int index = Hash(&key);
+	int index = Hash(key);
+	printf("Hashed key to index '%d'\n", index);
 
 	if (index >= BUCKET_COUNT) {
 		printf("[ERROR] invalid hash index\n");
@@ -113,33 +61,33 @@ KeyValuePair* ht_get_kvpair(HashTable table, int key) {
 		if (pair == NULL) continue;
 
 		if (table.are_equal == NULL) {
-			if (&key == pair->key) return pair;
-		} else if (table.are_equal(&key,pair->key)) 
+			if (key == pair->key) return pair;
+		} else if (table.are_equal(key,pair->key)) 
 			return pair;
 
 	}
 
 	return NULL;
-
 }
 
-bool ht_containskey(HashTable table, int key) {
+
+bool ht_containskey(HashTable table, void* key) {
 	return ht_get_kvpair(table, key) != NULL;
 }
 
-void* ht_get (HashTable table, int key) {
+void* ht_get(HashTable table, void* key) {
 	KeyValuePair* pair = ht_get_kvpair(table, key);
 	if (pair == NULL) return NULL;
 	return pair->value;
 }
 
-static LinkedList* ht_get_bucket(HashTable table, int key) {
+LinkedList* ht_get_bucket(HashTable table, void* key) {
 	if (table.buckets == NULL) {
 		printf("[ERROR] table not initilized\n");
 		return NULL;
 	}
 
-	int index = Hash(&key);
+	int index = Hash(key);
 
 	if (index >= BUCKET_COUNT) {
 		printf("[ERROR] invalid hash index\n");
@@ -159,7 +107,7 @@ static LinkedList* ht_get_bucket(HashTable table, int key) {
 
 }
 
-static void ht_removeNode(LinkedList bucket, int index, KeyValuePair* pair) {
+void ht_removeNode(LinkedList bucket, int index, KeyValuePair* pair) {
 	free(pair->value);
 	pair->value = NULL;
 	free(pair->key);
@@ -167,7 +115,7 @@ static void ht_removeNode(LinkedList bucket, int index, KeyValuePair* pair) {
 	ll_remove(bucket, index);
 }
 
-void ht_remove(HashTable table, int key) {
+void ht_remove(HashTable table, void* key) {
 
 	printf("removing\n");
 	LinkedList* bucket = ht_get_bucket(table, key);
@@ -186,10 +134,10 @@ void ht_remove(HashTable table, int key) {
 			continue;
 		}
 
-		if (table.are_equal == NULL && &key == pair->key) {
+		if (table.are_equal == NULL && key == pair->key) {
 			ht_removeNode(*bucket, index, pair);
 			return;
-		} else if (table.are_equal(&key,pair->key)) {
+		} else if (table.are_equal(key,pair->key)) {
 			ht_removeNode(*bucket, index, pair);
 			return;
 		}
@@ -200,22 +148,24 @@ void ht_remove(HashTable table, int key) {
 }
 
 void CreateKVPair(KeyValuePair* pair, void* key, size_t keySize, void* value, size_t valueSize) {
-	pair->key = malloc(keySize);	
+	pair->key = malloc(keySize);
 	memcpy(pair->key, key, keySize);
 	pair->value = malloc(valueSize);
 	memcpy(pair->value, value, valueSize);
+	pair->free_keycontent = NULL;
+	pair->free_valuecontent = NULL;
 }
 
-int ht_put(HashTable table, int key, int value) {
+int ht_put(HashTable table, void* key, size_t keySize, void* value, size_t valueSize) {
 
 	LinkedList* bucket = ht_get_bucket(table, key);
 
 	KeyValuePair pair;
 	CreateKVPair(&pair, 
-			&key,
-			sizeof(int),
-			&value,
-			sizeof(int));
+			key,
+			keySize,
+			value,
+			valueSize);
 
 	ll_add(bucket, &pair, sizeof(KeyValuePair));
 
@@ -247,15 +197,4 @@ void ht_free(HashTable table) {
 
 	}
 }
-
-
-
-
-
-
-
-
-
-
-
 

@@ -6,6 +6,8 @@
 typedef struct _KeyValuePair {
 	void* key;
 	void* value;
+	void (*free_keycontent)(void*);
+	void (*free_valuecontent)(void*);
 } KeyValuePair;
 
 typedef struct _HashTable {
@@ -16,13 +18,13 @@ typedef struct _HashTable {
 
 void ht_initilize(HashTable* table);
 
-bool ht_containskey(HashTable table, int key);
+bool ht_containskey(HashTable table, void* key);
 
-void* ht_get(HashTable table, int key);
+void* ht_get(HashTable table, void* key);
 
-int ht_put(HashTable table, int key, int value);
+int ht_put(HashTable table, void* key, size_t keySize, void* value, size_t valueSize);
 
-void ht_remove(HashTable table, int key);
+void ht_remove(HashTable table, void* key);
 
 int ht_size(HashTable table);
 
