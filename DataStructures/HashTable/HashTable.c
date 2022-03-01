@@ -7,9 +7,6 @@
 const int BUCKET_COUNT = 10;
 
 static int Hash(void* key) {
-//	time_t t;
-//	srand((unsigned) time(&t));
-//	int hashcode = rand() % BUCKET_COUNT;
 	int hashcode = 1;
 	printf("[INFO] hashed '%p' to '%d'\n", key, hashcode);
 	return hashcode;
@@ -24,6 +21,15 @@ static bool CompareInts(void* a, void* b) {
 
 	return intA == intB;
 	
+}
+
+static void FreeKVPair(void* value) {
+	KeyValuePair* pair = value;
+	if (pair != NULL) {
+		printf("Try to '%p' & '%p'\n", pair->key, pair->value);
+		free(pair->key);
+		free(pair->value);
+	}
 }
 
 int main() {
@@ -57,7 +63,16 @@ int main() {
 	int* invalid = ht_get(table, key2);
 	if (invalid != NULL)
 		printf("You shouldn't see this%d\n", *invalid);
+	
+	int key3 = 2;
+	int value3 = 202;
+	printf("Putting value '%d' into key '%d'\n", value3, key3);
+	ht_put(table, key3, value3);
 
+	int key4 = 2;
+	int value4 = 202;
+	printf("Putting value '%d' into key '%d'\n", value4, key4);
+	ht_put(table, key4, value4);
 
 	ht_free(table);	
 
@@ -136,28 +151,28 @@ static LinkedList* ht_get_bucket(HashTable table, int key) {
 	if (bucket == NULL) {
 		table.buckets[index] = malloc(sizeof(LinkedList));
 		bucket = table.buckets[index];
-		bucket->head = NULL;
-		bucket->size = 0;
+		ll_initilize(table.buckets[index]);	
+		table.buckets[index]->free_contents = FreeKVPair;
 	}
 
 	return bucket;
 
 }
 
-void ht_removeNode(LinkedList bucket, Node* node) {
-	KeyValuePair* pair = (KeyValuePair*) node->value;
-	ll_remove(bucket, node);	
+static void ht_removeNode(LinkedList bucket, int index, KeyValuePair* pair) {
 	free(pair->value);
+	pair->value = NULL;
 	free(pair->key);
-	free(pair);
-	free(node);
+	pair->key = NULL;
+	ll_remove(bucket, index);
 }
 
 void ht_remove(HashTable table, int key) {
 
 	printf("removing\n");
 	LinkedList* bucket = ht_get_bucket(table, key);
-
+	
+	int index = 0;
 	Node* currNode = bucket->head;
 	while (1) {
 
@@ -167,18 +182,20 @@ void ht_remove(HashTable table, int key) {
 
 		if (pair == NULL) {
 			currNode = currNode->next;
+			index++;
 			continue;
 		}
 
 		if (table.are_equal == NULL && &key == pair->key) {
-			ht_removeNode(*bucket, currNode);
+			ht_removeNode(*bucket, index, pair);
 			return;
 		} else if (table.are_equal(&key,pair->key)) {
-			ht_removeNode(*bucket, currNode);
+			ht_removeNode(*bucket, index, pair);
 			return;
 		}
 
 		currNode = currNode->next;
+		index++;
 	}
 }
 
@@ -217,32 +234,18 @@ void ht_free(HashTable table) {
 			LinkedList* bucket = table.buckets[i];
 			
 			if (bucket != NULL) {
-				Node* currNode = bucket->head;
-				while (currNode != NULL) {
-					KeyValuePair* pair = currNode->value;
-					if (pair != NULL) {
-						if (pair->key != NULL) free(pair->key);
-						if (pair->value != NULL) free(pair->value);
-					}
-					currNode = currNode->next;
-				}
-
 				ll_free(bucket);
 				free(bucket);
+				bucket = NULL;
 			}
 
 			printf("free\n");
 		}
 
 		free(table.buckets);
+		table.buckets = NULL;
 
 	}
-
-//	if (table.are_equal != NULL) {
-//		printf("Freeing equal func\n");
-//		free(table.are_equal);
-//	}
-
 }
 
 
